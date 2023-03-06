@@ -1,0 +1,73 @@
+/**
+ * Returns the historical price of a cryptocurrency in the specified fiat currency at the specified date and time.
+ * Example: getCryptoPrice(B2, "BTC", "CAD") assuming B2 contains a date "2023-03-01T02:27:37+00"
+ * @param {string} timestamp - The date and time in ISO 8601 format "yyyy-mm-ddThh:mm:ss+00", e.g. "2023-03-01T02:27:37+00".
+ * @param {string} cryptocurrency - The cryptocurrency of choice. Valid values are "BTC" and "ETH". Defaults to "BTC" if not specified.
+ * @param {string} fiatcurrency - The fiat currency to return the cryptocurrency price in. Valid values are "USD" and "CAD". Defaults to "CAD" if not specified.
+ * @return {number|string} - The cryptocurrency price in the specified fiat currency, or an error message if the data is not available.
+ * @customfunction
+ */
+
+
+function getCryptoPrice(timestamp,cryptocurrency="BTC",fiatcurrency) {
+ 
+
+  var date = new Date(timestamp?.replace('T', ' ') + 'Z');
+  var unixTimestamp = Math.floor(date.getTime());
+
+  if (cryptocurrency === "ETH") {
+  // Query the Binance API for the historical ETH price in USD
+  var response = UrlFetchApp.fetch("https://api.binance.us/api/v3/klines?symbol=ETHUSDT&interval=1s&startTime=" + unixTimestamp + "&limit=1", {"muteHttpExceptions": true});
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+  } else {
+      // Query the Binance API for the historical Bitcoin price in USD
+  var response = UrlFetchApp.fetch("https://api.binance.us/api/v3/klines?symbol=BTCUSDT&interval=1s&startTime=" + unixTimestamp + "&limit=1", {"muteHttpExceptions": true});
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+
+  }
+
+  if (data.length > 0) {
+    var cryptoPrice = data[0][4];
+
+    // Fetch the CAD exchange rate for the date in the timestamp
+    var dateString = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    var fxUrl = 'https://www.bankofcanada.ca/valet/observations/FXUSDCAD?start_date=' + dateString + '&end_date=' + dateString;
+    var fxResponse = UrlFetchApp.fetch(fxUrl);
+    var fxJson = fxResponse.getContentText();
+    var fxData = JSON.parse(fxJson);
+    var cadRate = fxData.observations[0]?.FXUSDCAD?.v;
+
+    // If the exchange rate is not available for the given date, keep moving the date in the past until a valid exchange rate is found
+    while (!cadRate && date > new Date('2000-01-01')) {
+      date.setDate(date.getDate() - 1);
+      dateString = Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      fxUrl = 'https://www.bankofcanada.ca/valet/observations/FXUSDCAD?start_date=' + dateString + '&end_date=' + dateString;
+      fxResponse = UrlFetchApp.fetch(fxUrl);
+      fxJson = fxResponse.getContentText();
+      fxData = JSON.parse(fxJson);
+      cadRate = fxData.observations[0]?.FXUSDCAD?.v;
+    }
+
+    if (cadRate) {
+      // Calculate the Bitcoin price in CAD
+      var cadPrice = cryptoPrice * cadRate;
+ 
+     if (fiatcurrency === "USD") {
+    // Return the Bitcoin price in CAD
+    return cryptoPrice;
+      } else {
+    // Return the Bitcoin price in CAD
+    return cadPrice
+      }
+   
+    } else {
+      // Return an error message if no exchange rate is available
+      return "No exchange rate available";
+    }
+  } else {
+    // Return an error message if no data is available
+    return "No data available";
+  }
+}
