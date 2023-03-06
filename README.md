@@ -1,7 +1,7 @@
 # Googlesheets Scripts: Crypto Historical Price and ShakepayStats Functions
 
 ## Description
-These functions allow you to retrieve historical cryptocurrency prices and summarize Shakepay transaction data for a given month. 
+The [Crypto historical price](https://github.com/securityiskey/Shakepay-Stats-Google-Sheets/blob/main/Crypto%20historical%20) price function allow you to retrieve historical cryptocurrency prices (BTC or ETH) and display them in (CAD or USD) at a given date and time, and the [ShakePaystats](https://github.com/securityiskey/Shakepay-Stats-Google-Sheets/blob/main/ShakePaystats) function helps you summarize Shakepay transaction data and break it down by month. They work independently from each other, so feel free to copy both functions to your Google Sheet or just one of them.
 
 ## Usage
 1. Copy the function code for the function you want to use.
@@ -40,6 +40,7 @@ getShakeyStats(range)
 Assuming the transaction data is in columns A through K of Sheet1, this will return a monthly summary of Shakepay transaction data in a new sheet. Feel free to copy it.
 
 To see how to use these functions, check out the [Example Sheet](https://docs.google.com/spreadsheets/d/1zVC0OqCdjo41pWUnaLXuLWsBJiFGEoO6IHOo24GyuZQ/edit#gid=0).
+
 ![image](https://user-images.githubusercontent.com/92526489/223212389-bc16e588-b40d-478a-9090-e004a600a35c.png)
 ![image](https://user-images.githubusercontent.com/92526489/223212643-2fdd3e89-fae7-422b-9729-d6c25f021dd3.png)
 
