@@ -40,5 +40,8 @@ getShakeyStats(range)
 Assuming the transaction data is in columns A through K of Sheet1, this will return a monthly summary of Shakepay transaction data in a new sheet. Feel free to copy it.
 
 To see how to use these functions, check out the [Example Sheet](https://docs.google.com/spreadsheets/d/1zVC0OqCdjo41pWUnaLXuLWsBJiFGEoO6IHOo24GyuZQ/edit#gid=0).
+![image](https://user-images.githubusercontent.com/92526489/223212389-bc16e588-b40d-478a-9090-e004a600a35c.png)
+![image](https://user-images.githubusercontent.com/92526489/223212643-2fdd3e89-fae7-422b-9729-d6c25f021dd3.png)
+
 ## Support
-These functions were created as a hobby project to help others. If you encounter any issues or have questions about these functions, feel free to reach out to the creator at their Github user handle @security is key. If you'd like to show your support, you can buy the creator a coffee by sending Bitcoin at bc1qtaqvqs4l0psrvhazjggwzh6pxmg0d3ex82qng8.
+These functions were created as a hobby project to help others. If you encounter any issues or have questions about these functions, feel free to reach out to the creator at their Github user handle @security is key. If you'd like to show your support, you can buy the creator a coffee by sending Bitcoin at bc1qtaqvqs4l0psrvhazjggwzh6pxmg0d3ex82qng8 OR if you have Shakepay my username is @einvestor :) cheers
