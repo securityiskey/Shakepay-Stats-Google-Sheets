@@ -1,0 +1,341 @@
+/**
+ * Returns a monthly summary of Shakepay transaction summary data.
+ * To use: copy the transaction data in columns A through K of the active sheet, then use the formula =getShakeyStats().
+ * Alternatively you can do =getShakeyStats(Sheet1!A:K) by referencing the data range
+ * This custom function calculates monthly totals for the following fields: ShakingSats, ShakingCount, ShakeSquadsSats, ShakepayEarnSats, ShakePay Rewards, CardCashbacksSats, Transactions ($), Transactions Count, BTC Buys (CAD), BTC Avg Buy Price, BTC Sells (CAD), BTC Avg Sell Price, BTC Funding, and BTC Cashout.
+ * @param {string} range - The data range from A to K i.e getShakeyStats(Sheet1!A:K)
+ * @customfunction
+ */
+
+/*  Shakey stats */
+
+function getShakeyStats(range) {
+  let data;
+  if (range) {
+    data = range;
+  } else {
+    const sheet = SpreadsheetApp.getActiveSheet();
+    data = sheet.getDataRange().getValues();
+  }
+  let monthlyTotalShakingSats = {};
+  let monthlyTotalShakingSatsCount = {};
+  let monthlyTotalShakeSquads = {};
+  let monthlyTotalShakepayEarn = {};
+  let monthlyTotalCardCashbacks = {};
+  let monthlyTotalCardTransactions = {};
+  let monthlyTransactionCounts = {};
+  let monthlyAvgBTCCost = {};
+  let monthlyAvgBTCSaleCost = {};
+  let monthlyTotalCreditedBuy = {};
+  let monthlyTotalCreditedSale ={};
+  let monthlyTotalDebited = {};
+  let monthlyTotalDebitedSale = {};
+  let monthlyTotalfunding = {};
+  let monthlyTotalcashout = {};
+  let monthlyTotalshakepayreward = {};
+  let grandTotalShakingSats = 0;
+  let grandTotalShakingSatsCount = 0;
+  let grandTotalShakeSquads = 0;
+  let grandTotalShakepayEarn = 0;
+  let grandTotalCardCashbacks = 0;
+  let grandTotalCardTransactions = 0;
+  let grandTotalCardTransactionscount = 0;
+  let grandTotalAvgBTCCost= 0;
+  let grandTotalDebited = 0;
+  let grandTotalDebitedSale = 0;
+  let grandTotalcredited = 0;
+  let grandTotalcreditedSale = 0;
+  let grandTotalfunding = 0;
+  let grandTotalcashout = 0;
+  let grandTotalAvgBTCCostSell = 0;
+  let grandTotalTotalshakepayreward =0;
+  
+
+  data.forEach(function(row) {
+    const transactionType = row[0];
+    
+    if (transactionType == "shakingsats" || transactionType == "shakesquads" || transactionType == "shakepay earn" || transactionType == "card cashbacks" || transactionType == "card transactions") {
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const amountCredited = row[4];
+      const amountDebited = row[2];
+      const spotRate = row[8];
+      let total = 0;
+      
+      if (transactionType == "shakingsats") {
+        total = amountCredited * 100000000;
+        if (monthlyTotalShakingSats[year] == undefined) {
+          monthlyTotalShakingSats[year] = {};
+          monthlyTotalShakingSatsCount[year] = {};
+        }
+        
+        if (monthlyTotalShakingSats[year][month] == undefined) {
+          monthlyTotalShakingSats[year][month] = 0;
+          monthlyTotalShakingSatsCount[year][month] = 0;
+        }
+        monthlyTotalShakingSatsCount[year][month]++;
+        monthlyTotalShakingSats[year][month] += total;
+        grandTotalShakingSats += total;
+        grandTotalShakingSatsCount += 1;
+      }
+      
+      if (transactionType == "shakesquads") {
+        total = amountCredited * 100000000 //* spotRate;
+        if (monthlyTotalShakeSquads[year] == undefined) {
+          monthlyTotalShakeSquads[year] = {};
+        }
+        
+        if (monthlyTotalShakeSquads[year][month] == undefined) {
+          monthlyTotalShakeSquads[year][month] = 0;
+        }
+        
+        monthlyTotalShakeSquads[year][month] += total;
+        grandTotalShakeSquads += total;
+      }
+      
+      if (transactionType == "shakepay earn") {
+        total = amountCredited * 100000000 //* spotRate;
+        if (monthlyTotalShakepayEarn[year] == undefined) {
+          monthlyTotalShakepayEarn[year] = {};
+        }
+        
+        if (monthlyTotalShakepayEarn[year][month] == undefined) {
+          monthlyTotalShakepayEarn[year][month] = 0;
+        }
+        
+        monthlyTotalShakepayEarn[year][month] += total;
+        grandTotalShakepayEarn += total;
+      }
+      
+      if (transactionType == "card cashbacks") {
+        total = amountCredited * 100000000 //* spotRate;
+        if (monthlyTotalCardCashbacks[year] == undefined) {
+          monthlyTotalCardCashbacks[year] = {};
+        }
+        
+        if (monthlyTotalCardCashbacks[year][month] == undefined) {
+          monthlyTotalCardCashbacks[year][month] = 0;
+        }
+        
+        monthlyTotalCardCashbacks[year][month] += total;
+        grandTotalCardCashbacks += total;
+      }
+      if (transactionType == "card transactions") {
+        total = amountDebited;
+        
+        if (monthlyTotalCardTransactions[year] == undefined) {
+          monthlyTotalCardTransactions[year] = {};
+          monthlyTransactionCounts[year] = {};
+        }
+        
+        if (monthlyTotalCardTransactions[year][month] == undefined) {
+          monthlyTotalCardTransactions[year][month] = 0;
+          monthlyTransactionCounts[year][month] = 0;
+        }
+        monthlyTransactionCounts[year][month]++;
+        monthlyTotalCardTransactions[year][month] += total;
+        grandTotalCardTransactions += total;
+        grandTotalCardTransactionscount += 1;
+      }
+       
+    }
+/////////////////////////////////////////////BTC Purchase////////////////////////////////////////////////////////
+     if (transactionType == "purchase/sale" && row[5] == "BTC" && row[7] == "purchase") {
+ 
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const debitedTotal = row[2];
+      const creditedTotal = row[4];
+
+
+  const BTCCOST = debitedTotal;
+  const BTCUNIT = creditedTotal;
+
+  if (monthlyAvgBTCCost[year] == undefined) {
+    monthlyAvgBTCCost[year] = {};
+  }
+        
+  if (monthlyAvgBTCCost[year][month] == undefined) {
+    monthlyAvgBTCCost[year][month] = 0;
+  }
+
+  // accumulate the total debited and credited amounts for each month
+  if (monthlyTotalDebited[year] == undefined) {
+    monthlyTotalDebited[year] = {};
+  }
+  if (monthlyTotalDebited[year][month] == undefined) {
+    monthlyTotalDebited[year][month] = 0;
+  }
+  monthlyTotalDebited[year][month] += debitedTotal;
+  
+  if (monthlyTotalCreditedBuy[year] == undefined) {
+    monthlyTotalCreditedBuy[year] = {};
+  }
+  if (monthlyTotalCreditedBuy[year][month] == undefined) {
+    monthlyTotalCreditedBuy[year][month] = 0;
+  }
+  monthlyTotalCreditedBuy[year][month] += creditedTotal;
+
+  // calculate the average cost per BTC for each month
+  if (monthlyAvgBTCCost[year][month] == undefined) {
+    monthlyAvgBTCCost[year][month] = 0;
+  }
+  monthlyAvgBTCCost[year][month] = monthlyTotalDebited[year][month] / monthlyTotalCreditedBuy[year][month];
+  grandTotalDebited += BTCCOST;
+  grandTotalcredited +=BTCUNIT
+  grandTotalAvgBTCCost = grandTotalDebited/grandTotalcredited;
+}
+/////////////////////////////////////////////BTC Sale////////////////////////////////////////////////////////
+     if (transactionType == "purchase/sale" && row[3] == "BTC" && row[7] == "sale") {
+ 
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const debitedTotalSale = row[2];
+      const creditedTotalSale = row[4];
+
+
+  const BTCUNITSALE = debitedTotalSale;
+  const CADUNIT = creditedTotalSale;
+
+  if (monthlyAvgBTCSaleCost[year] == undefined) {
+    monthlyAvgBTCSaleCost[year] = {};
+  }
+        
+  if (monthlyAvgBTCSaleCost[year][month] == undefined) {
+    monthlyAvgBTCSaleCost[year][month] = 0;
+  }
+
+  // accumulate the total debited and credited amounts for each month
+  if (monthlyTotalDebitedSale[year] == undefined) {
+    monthlyTotalDebitedSale[year] = {};
+  }
+  if (monthlyTotalDebitedSale[year][month] == undefined) {
+    monthlyTotalDebitedSale[year][month] = 0;
+  }
+  monthlyTotalDebitedSale[year][month] += debitedTotalSale;
+  
+  if (monthlyTotalCreditedSale[year] == undefined) {
+    monthlyTotalCreditedSale[year] = {};
+  }
+  if (monthlyTotalCreditedSale[year][month] == undefined) {
+    monthlyTotalCreditedSale[year][month] = 0;
+  }
+  monthlyTotalCreditedSale[year][month] += creditedTotalSale;
+
+  // calculate the average cost per BTC for each month
+  if (monthlyAvgBTCSaleCost[year][month] == undefined) {
+    monthlyAvgBTCSaleCost[year][month] = 0;
+  }
+  monthlyAvgBTCSaleCost[year][month] =  monthlyTotalCreditedSale[year][month]/monthlyTotalDebitedSale[year][month];
+  grandTotalDebitedSale += CADUNIT;
+  grandTotalcreditedSale += BTCUNITSALE
+  grandTotalAvgBTCCostSell = grandTotalDebitedSale/grandTotalcreditedSale;
+}
+
+/////////////////////////////////////////////BTC Funding////////////////////////////////////////////////////////
+     if (transactionType == "crypto funding" && row[5] == "BTC" && row[7] == "credit") {
+ 
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const creditedTotalfund = row[4];
+
+
+        total = creditedTotalfund //* 100000000;
+        if (monthlyTotalfunding[year] == undefined) {
+          monthlyTotalfunding[year] = {};
+        }
+        
+        if (monthlyTotalfunding[year][month] == undefined) {
+          monthlyTotalfunding[year][month] = 0;
+        }
+        
+        monthlyTotalfunding[year][month] += total;
+        grandTotalfunding += total;
+      }
+
+/////////////////////////////////////////////BTC Cashout////////////////////////////////////////////////////////
+     if (transactionType == "crypto cashout" && row[3] == "BTC" && row[7] == "debit") {
+ 
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const btcTotalcashout = row[2];
+
+
+        total = btcTotalcashout //* 100000000;
+        if (monthlyTotalcashout[year] == undefined) {
+          monthlyTotalcashout[year] = {};
+        }
+        
+        if (monthlyTotalcashout[year][month] == undefined) {
+          monthlyTotalcashout[year][month] = 0;
+        }
+        
+        monthlyTotalcashout[year][month] += total;
+        grandTotalcashout += total;
+      }
+/////////////////////////////////////////////shakepayrewards////////////////////////////////////////////////////////
+     if (transactionType == "peer transfer" && row[9] == "@shakepayrewards") {
+ 
+      const dateParts = row[1].split("T")[0].split("-");
+      const year = parseInt(dateParts[0]);
+      const month = parseInt(dateParts[1]);
+      const creditedTotalshakepayreward = row[4];
+
+
+        total = creditedTotalshakepayreward;
+        if (monthlyTotalshakepayreward[year] == undefined) {
+          monthlyTotalshakepayreward[year] = {};
+        }
+        
+        if (monthlyTotalshakepayreward[year][month] == undefined) {
+          monthlyTotalshakepayreward[year][month] = 0;
+        }
+        
+        monthlyTotalshakepayreward[year][month] += total;
+        grandTotalTotalshakepayreward += total;
+      }
+
+
+
+  });
+
+
+
+  
+  let result = [["Month", "ShakingSats","ShakingCount" ,"ShakeSquadsSats", "ShakepayEarnSats","ShakePay Rewards ($)" ,"CardCashbacksSats", "Card Transactions ($)","Transactions Count","BTC Buys (CAD)","BTC Avg Buy Price","BTC Sells (CAD)","BTC Avg Sell Price","BTC Funding","BTC Cashout"]];
+  
+  for (let year in monthlyTotalShakingSats) {
+    for (let month in monthlyTotalShakingSats[year]) {
+      const shakingSatsTotal = monthlyTotalShakingSats[year][month] ?? 0;
+      const shakingSatsCount = monthlyTotalShakingSatsCount[year][month] ?? 0;
+      const shakeSquadsTotal = monthlyTotalShakeSquads[year]?.[month] ?? 0;
+      const shakepayEarnTotal = monthlyTotalShakepayEarn[year]?.[month] ?? 0;
+      const shakepayrewards = monthlyTotalshakepayreward[year]?.[month] ?? 0;
+      const cardcashbacksTotal = monthlyTotalCardCashbacks[year]?.[month] ?? 0;
+      const cardTransactionsTotal = monthlyTotalCardTransactions[year]?.[month] ?? 0;
+      const cardTransactionsCount = monthlyTransactionCounts[year]?.[month] ?? 0;    
+      const totaldebited = monthlyTotalDebited[year]?.[month] ?? 0;
+//      const totaldebitedsale = monthlyTotalDebitedSale[year]?.[month] ?? 0;
+      const costbtcavg = monthlyAvgBTCCost[year]?.[month] ?? 0;
+      const totalcredit = monthlyTotalCreditedSale[year]?.[month] ?? 0;
+      const costbtcavgsell = monthlyAvgBTCSaleCost[year]?.[month] ?? 0;
+      const btcfunding = monthlyTotalfunding[year]?.[month] ?? 0;
+      const btccashout = monthlyTotalcashout[year]?.[month] ?? 0;
+
+      result.push([year + "-" + (month < 10 ? "0" : "") + month,shakingSatsTotal,shakingSatsCount,shakeSquadsTotal,shakepayEarnTotal,shakepayrewards, cardcashbacksTotal, "$" + cardTransactionsTotal.toFixed(2),cardTransactionsCount,"$" + totaldebited.toFixed(2), "$" + costbtcavg.toFixed(2),totalcredit.toFixed(2), "$" + costbtcavgsell.toFixed(2),btcfunding,btccashout]);
+      
+    }
+  }
+  
+
+  
+  const grandTotalRow = ["Since Inception", grandTotalShakingSats,grandTotalShakingSatsCount,grandTotalShakeSquads,grandTotalShakepayEarn, grandTotalTotalshakepayreward,grandTotalCardCashbacks, "$" + grandTotalCardTransactions.toFixed(2),grandTotalCardTransactionscount,"$" + grandTotalDebited.toFixed(2),"$" + grandTotalAvgBTCCost.toFixed(2),grandTotalDebitedSale.toFixed(2),"$" + grandTotalAvgBTCCostSell.toFixed(2),grandTotalfunding,grandTotalcashout];
+  result.push(grandTotalRow);
+  return result;
+
+}
